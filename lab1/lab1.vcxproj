@@ -119,7 +119,7 @@
     <ClCompile Include="datalink.c" />
     <ClCompile Include="getopt.c" />
     <ClCompile Include="lprintf.c" />
-    <ClCompile Include="protocol.cpp" />
+    <ClCompile Include="protocol.c" />
     <ClCompile Include="selective_repeat.cpp" />
   </ItemGroup>
   <ItemGroup>

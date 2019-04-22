@@ -661,6 +661,7 @@ static int ts0;
 
 void put_packet(unsigned char *packet, int len)
 {
+	printf("put_packet called\n");
     static int last_ts = 0;
     int i, (*my_rand)(void) = station == 'a' ? randB : randA;
 
