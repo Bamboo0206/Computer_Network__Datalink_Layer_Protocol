@@ -7,7 +7,8 @@
 
 
 
-typedef unsigned char seq_nr; //序号
+//typedef unsigned char seq_nr; //序号
+typedef char seq_nr; //序号
 typedef enum { data, ack, nak } frame_kind;
 
 /*帧结构*/
@@ -21,8 +22,8 @@ typedef struct {
 
 #define MAX_SEQ 7 //最大序号/* should be 2^n- 1 */
 #define NR_BUFS ((MAX_SEQ+ 1)/2)  //最大缓冲区数量
-#define ACK_TIMER 50 //ACK定时器，单位ms
-#define DATA_TIMER  700
+#define ACK_TIMER 150 //ACK定时器，单位ms
+#define DATA_TIMER  1500
 
 
 bool no_nak = true; /*no nak has been sent yet */
@@ -44,7 +45,8 @@ static void put_frame(frame_kind fk/*帧的类型*/, seq_nr data_seq/*data的序号*/, 
 	int len = 2;//最小的帧，只有kind和ack
 	s.kind = fk; /* kind == data, ack,nak*/
 	s.seq = data_seq; /* only meaningful for data frames */
-	s.ack = (frame_expected - 1) % (MAX_SEQ + 1);//??????//第一帧255，char溢出了
+	s.ack = ((frame_expected - 1) % (MAX_SEQ + 1));//??????//第一帧255，char溢出了
+	s.ack = ((frame_expected - 1) % (MAX_SEQ + 1));//???
 	//printf("seq %d  ack %d \n", s.seq, s.ack);
 	if (fk == nak)
 		no_nak = false; /* one nak per frame, please */
@@ -184,7 +186,7 @@ int main(int argc, char **argv)
 			break;
 
 		case ACK_TIMEOUT:
-			dbg_event((char*)"---- ACK %d timeout\n", frame_expected - 1);//？？
+			dbg_event((char*)"---- ACK %d timeout\n", ((frame_expected - 1) % MAX_SEQ));//？？
 			put_frame(ack, 0, frame_expected,NULL); /* ack timer expired; send ack */
 			break;
 		}
