@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 			nbuffered = nbuffered + 1; /* expand the window */
 			get_packet(out_buf[next_frame_to_send % NR_BUFS]);/* 取 packet */
 			put_frame(data, next_frame_to_send, frame_expected, out_buf[next_frame_to_send % NR_BUFS]);/* 发 frame */
-			inc(&next_frame_to_send);/* advance upper window edge */ //???循环加还普通++？？？？
+			inc(&next_frame_to_send);/* advance upper window edge */ //循环加 0~7
 			printf("next_frame_to_send %d frame_expected %d\n", next_frame_to_send, frame_expected);
 			break;
 
