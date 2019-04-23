@@ -22,10 +22,7 @@ typedef struct {
 #define MAX_SEQ 7 //最大序号/* should be 2^n- 1 */
 #define NR_BUFS ((MAX_SEQ+ 1)/2)  //最大缓冲区数量
 #define ACK_TIMER 50 //ACK定时器，单位ms
-#define DATA_TIMER  2000
-
-/*全局变量*/
-
+#define DATA_TIMER  700
 
 
 bool no_nak = true; /*no nak has been sent yet */
@@ -42,23 +39,23 @@ static bool between(seq_nr a, seq_nr b, seq_nr c)//b在区间[a,c)内否
 /*打包一帧（data/ack/nak）并交给物理层*/
 static void put_frame(frame_kind fk/*帧的类型*/, seq_nr data_seq/*data的序号*/, seq_nr frame_expected, unsigned char *buffer=NULL)
 {
-	printf("put_frame called,帧类型%d\n",fk);
+	//printf("put_frame called,帧类型%d\n",fk);
 	frame s{ 0,0,0,0,0 }; /* scratch variable */
 	int len = 2;//最小的帧，只有kind和ack
 	s.kind = fk; /* kind == data, ack,nak*/
 	s.seq = data_seq; /* only meaningful for data frames */
 	s.ack = (frame_expected - 1) % (MAX_SEQ + 1);//??????//第一帧255，char溢出了
-	printf("seq %d  ack %d \n", s.seq, s.ack);
+	//printf("seq %d  ack %d \n", s.seq, s.ack);
 	if (fk == nak)
 		no_nak = false; /* one nak per frame, please */
 	if (fk == data)
 	{
-		printf("1\n");
+		//printf("1\n");
 		memcpy(s.data, buffer, PKT_LEN);//将buffer里的packet拷贝到帧里//dest,src
-		printf("1.1\n");
+		//printf("1.1\n");
 		len = 3 + PKT_LEN;//kind,ack,seq,data[]
 		dbg_frame((char*)"Send DATA %d ACK %d, ID %d\n", s.seq, s.ack, *(short *)s.data);
-		printf("12\n");
+		//printf("12\n");
 	}
 	else if(fk==ack)
 	{
@@ -77,7 +74,7 @@ static void put_frame(frame_kind fk/*帧的类型*/, seq_nr data_seq/*data的序号*/, 
 	/*给物理层*/
 	
 	send_frame((unsigned char *)&s, len + 4);//神tm加4？？？
-	printf("发送完毕\n");
+	//printf("发送完毕\n");
 
 	if (fk == data) 
 		start_timer(data_seq %NR_BUFS,DATA_TIMER);
@@ -118,16 +115,16 @@ int main(int argc, char **argv)
 		event = wait_for_event(&event);/* five possibilities: see event_type above */
 		switch (event) {
 		case NETWORK_LAYER_READY: /* accept, save, and transmit a new frame */
-			printf("NETWORK_LAYER_READY准备发送一帧\n");
+			//printf("NETWORK_LAYER_READY准备发送一帧\n");
 			nbuffered = nbuffered + 1; /* expand the window */
 			get_packet(out_buf[next_frame_to_send % NR_BUFS]);/* 取 packet */
 			put_frame(data, next_frame_to_send, frame_expected, out_buf[next_frame_to_send % NR_BUFS]);/* 发 frame */
 			inc(&next_frame_to_send);/* advance upper window edge */ //循环加 0~7
-			printf("next_frame_to_send为 %d frame_expected为 %d\n", next_frame_to_send, frame_expected);
+			//printf("next_frame_to_send为 %d frame_expected为 %d\n", next_frame_to_send, frame_expected);
 			break;
 
 		case FRAME_RECEIVED: /* a data or control frame has arrived*/
-			printf("FRAME_RECEIVED收到一帧,类型为%d,期待frame序号为%d\n",f.kind,frame_expected);
+			//printf("FRAME_RECEIVED收到一帧,类型为%d,期待frame序号为%d\n",f.kind,frame_expected);
 
 			/*CRC校验*/
 			len = recv_frame((unsigned char *)&f, sizeof f);//从物理层获取一帧？？
@@ -196,7 +193,7 @@ int main(int argc, char **argv)
 			enable_network_layer();
 		else
 			disable_network_layer();
-		putchar('\n');
+		//putchar('\n');
 	}
 
 	return 0;
