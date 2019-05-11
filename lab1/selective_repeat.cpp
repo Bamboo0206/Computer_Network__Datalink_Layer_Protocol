@@ -20,10 +20,10 @@ typedef struct {
 	unsigned int  padding;//数据帧的CRC（短帧的CRC在前面）
 } frame;
 
-#define MAX_SEQ 7 //最大序号/* should be 2^n- 1 */
+#define MAX_SEQ 15 //最大序号/* should be 2^n- 1 */
 #define NR_BUFS ((MAX_SEQ+ 1)/2)  //最大缓冲区数量
-#define ACK_TIMER 150 //ACK定时器，单位ms
-#define DATA_TIMER  1500
+#define ACK_TIMER 1000 //ACK定时器，单位ms
+#define DATA_TIMER  3000
 
 
 bool no_nak = true; /*no nak has been sent yet */
@@ -52,16 +52,12 @@ static void put_frame(frame_kind fk/*帧的类型*/, seq_nr data_seq/*data的序号*/, 
 		no_nak = false; /* one nak per frame, please */
 	if (fk == data)
 	{
-		//printf("1\n");
 		memcpy(s.data, buffer, PKT_LEN);//将buffer里的packet拷贝到帧里//dest,src
-		//printf("1.1\n");
 		len = 3 + PKT_LEN;//kind,ack,seq,data[]
 		dbg_frame((char*)"Send DATA %d ACK %d, ID %d\n", s.seq, s.ack, *(short *)s.data);
-		//printf("12\n");
 	}
 	else if(fk==ack)
 	{
-		printf("2\n");
 		dbg_frame((char*)"Send ACK  %d\n", s.ack);
 	}
 	else if (fk == nak)
@@ -75,7 +71,7 @@ static void put_frame(frame_kind fk/*帧的类型*/, seq_nr data_seq/*data的序号*/, 
 	
 	/*给物理层*/
 	
-	send_frame((unsigned char *)&s, len + 4);//神tm加4？？？
+	send_frame((unsigned char *)&s, len + 4);
 	//printf("发送完毕\n");
 
 	if (fk == data) 
